@@ -9,14 +9,16 @@ import (
 )
 
 var AuthenticationNotRequired map[string]bool = map[string]bool{
-	"/create":         true,
-	
+	"/create":       true,
+	"/problems/get": true,
 }
 
 var RoleMethods = map[string][]string{
-	"/users/get":               {utils.UserRole, utils.SuperAdminRole},
-	"/users/update/":           {utils.UserRole, utils.SuperAdminRole},
-	
+	"/users/get":              {utils.UserRole, utils.SuperAdminRole},
+	"/users/update/":          {utils.UserRole, utils.SuperAdminRole},
+	"/problems/upload":        {utils.UserRole, utils.SuperAdminRole},
+	"/problems/getnotvisible": {utils.UserRole, utils.SuperAdminRole},
+	"/problems/update/": {utils.UserRole, utils.SuperAdminRole},
 }
 
 // Authenticate is a middleware function that performs authentication

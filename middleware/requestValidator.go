@@ -40,6 +40,20 @@ func CheckHTTPAuthorization(r *http.Request, ctx context.Context, userType strin
 		ctx = context.WithValue(ctx, "email", email)
 		return ctx, nil
 
+	case strings.HasPrefix(r.URL.Path, "/problems/upload"):
+		ctx = context.WithValue(ctx, "email", userEmail)
+		ctx = context.WithValue(ctx, "role", userType)
+		return ctx, nil
+
+	case strings.HasPrefix(r.URL.Path, "/problems/getnotvisible"):
+		ctx = context.WithValue(ctx, "email", userEmail)
+		ctx = context.WithValue(ctx, "role", userType)
+		return ctx, nil
+
+	case strings.HasPrefix(r.URL.Path, "/problems/update/"):
+		ctx = context.WithValue(ctx, "email", userEmail)
+		ctx = context.WithValue(ctx, "role", userType)
+		return ctx, nil
 	}
 	// Default to allowing access if the route is not explicitly handled
 	return ctx, nil

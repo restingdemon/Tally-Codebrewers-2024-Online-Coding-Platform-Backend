@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 	"worldwide-coders/models"
+	"worldwide-coders/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // **********USER************************
@@ -75,4 +78,109 @@ func Helper_UpdateUser(user *models.User) error {
 	}
 
 	return nil
+}
+
+// Helper_InsertProblem inserts a new problem into the database and automatically increments the pid.
+func Helper_InsertProblem(problem *models.Problem) (*mongo.InsertOneResult, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("problems")
+
+	// Set options to sort by pid in descending order
+	findOptions := options.FindOne().SetSort(bson.D{{"pid", -1}})
+
+	// Find the problem with the highest pid
+	var lastProblem models.Problem
+	err := collection.FindOne(context.Background(), bson.M{}, findOptions).Decode(&lastProblem)
+	if err != nil && err != mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("failed to find last problem: %s", err)
+	}
+
+	// Increment pid
+	if lastProblem.Pid != 0 {
+		problem.Pid = lastProblem.Pid + 1
+	} else {
+		problem.Pid = 1 // First problem
+	}
+
+	// Insert the new problem
+	result, err := collection.InsertOne(context.Background(), problem)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert problem: %s", err)
+	}
+
+	return result, nil
+}
+
+func Helper_GetProblemByID(id int32) (*models.Problem, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("problems")
+	problem := &models.Problem{}
+	err := collection.FindOne(context.Background(), bson.M{"pid": id}).Decode(&problem)
+	return problem, err
+}
+
+func Helper_GetAllProblems() ([]models.Problem, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("problems")
+	cursor, err := collection.Find(context.Background(), bson.M{"visibility": true})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	var problems []models.Problem
+	if err := cursor.All(context.Background(), &problems); err != nil {
+		return nil, err
+	}
+
+	return problems, nil
+}
+
+func Helper_GetNotVisibleProblems(role string, email string) ([]models.Problem, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("problems")
+	if role == utils.SuperAdminRole {
+		cursor, err := collection.Find(context.Background(), bson.M{"visibility": false})
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close(context.Background())
+
+		var problems []models.Problem
+		if err := cursor.All(context.Background(), &problems); err != nil {
+			return nil, err
+		}
+
+		return problems, nil
+	} else {
+		cursor, err := collection.Find(context.Background(), bson.M{"author_id": email, "visibility": false})
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close(context.Background())
+
+		var problems []models.Problem
+		if err := cursor.All(context.Background(), &problems); err != nil {
+			return nil, err
+		}
+
+		return problems, nil
+	}
+}
+
+func Helper_UpdateProblem(id int32, problem *models.Problem) error {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("problems")
+
+	// Update the problem in the database
+	_, err := collection.UpdateOne(
+		context.Background(),
+		bson.M{"pid": id},
+		bson.M{
+			"$set": bson.M{
+				"title":       problem.Title,
+				"description": problem.Description,
+				"constraints": problem.Constraints,
+				"test_cases":  problem.TestCases,
+				"author_id":   problem.AuthorID,
+				"visibility":  problem.Visibility,
+			},
+		},
+	)
+	return err
 }

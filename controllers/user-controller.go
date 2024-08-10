@@ -1,5 +1,5 @@
 // auth-controller.go
-package controller
+package controllers
 
 import (
 	"context"
