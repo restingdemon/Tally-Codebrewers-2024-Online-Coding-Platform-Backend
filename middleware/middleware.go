@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"worldwide-coders/helpers"
+	"worldwide-coders/utils"
 )
 
 var AuthenticationNotRequired map[string]bool = map[string]bool{
@@ -13,7 +14,8 @@ var AuthenticationNotRequired map[string]bool = map[string]bool{
 }
 
 var RoleMethods = map[string][]string{
-	//"/users/get":               {utils.UserRole, utils.AdminRole, utils.SuperAdminRole},
+	"/users/get":               {utils.UserRole, utils.SuperAdminRole},
+	"/users/update/":           {utils.UserRole, utils.SuperAdminRole},
 	
 }
 
@@ -83,8 +85,6 @@ func Authenticate(next http.Handler) http.Handler {
 			w.Write([]byte(fmt.Sprintf("Permission denied: %s", err)))
 			return
 		}
-		sjhda := ctx.Value("email")
-		fmt.Println(sjhda)
 
 		// Call the next handler in the chain with the modified context
 		next.ServeHTTP(w, r.WithContext(ctx))

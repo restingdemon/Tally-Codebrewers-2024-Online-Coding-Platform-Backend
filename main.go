@@ -17,6 +17,7 @@ func main() {
 	r.Use(middleware.Authenticate)
 
 	routes.RegisterAuthRoutes(r)
+	routes.RegisterUserRoutes(r)
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
