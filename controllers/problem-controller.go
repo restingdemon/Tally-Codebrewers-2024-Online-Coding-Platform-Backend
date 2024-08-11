@@ -74,9 +74,9 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		if len(problem.TestCases) > 2 {
-			problem.TestCases = problem.TestCases[:2]
-		}
+		// if len(problem.TestCases) > 2 {
+		// 	problem.TestCases = problem.TestCases[:2]
+		// }
 		response, err := json.Marshal(problem)
 		if err != nil {
 			http.Error(w, "Failed to marshal problem details", http.StatusInternalServerError)
@@ -99,11 +99,11 @@ func GetProblems(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	for i := range problems {
-		if len(problems[i].TestCases) > 2 {
-			problems[i].TestCases = problems[i].TestCases[:2]
-		}
-	}
+	// for i := range problems {
+	// 	if len(problems[i].TestCases) > 2 {
+	// 		problems[i].TestCases = problems[i].TestCases[:2]
+	// 	}
+	// }
 	response, err := json.Marshal(problems)
 	if err != nil {
 		http.Error(w, "Failed to marshal problem details", http.StatusInternalServerError)

@@ -50,10 +50,49 @@ func CheckHTTPAuthorization(r *http.Request, ctx context.Context, userType strin
 		ctx = context.WithValue(ctx, "role", userType)
 		return ctx, nil
 
-	case strings.HasPrefix(r.URL.Path, "/problems/update/"):
+	case strings.HasPrefix(r.URL.Path, "/problems/update"):
 		ctx = context.WithValue(ctx, "email", userEmail)
 		ctx = context.WithValue(ctx, "role", userType)
 		return ctx, nil
+
+	case strings.HasPrefix(r.URL.Path, "/contests/register"):
+		ctx = context.WithValue(ctx, "email", userEmail)
+		return ctx, nil
+
+	case strings.HasPrefix(r.URL.Path, "/contests/create"):
+		ctx = context.WithValue(ctx, "email", userEmail)
+		return ctx, nil
+
+	case strings.HasPrefix(r.URL.Path, "/contests/get/registrations"):
+		vars := mux.Vars(r)
+		contestId, ok := vars["contestId"]
+		if !ok {
+			return ctx, fmt.Errorf("no contestId Id provided")
+		}
+
+		if userType == utils.SuperAdminRole {
+			ctx = context.WithValue(ctx, "contestId", contestId)
+			ctx = context.WithValue(ctx, "role", utils.SuperAdminRole)
+			ctx = context.WithValue(ctx, "userType", userType)
+			return ctx, nil
+		} else if userType == utils.UserRole {
+			ctx = context.WithValue(ctx, "contestId", contestId)
+			ctx = context.WithValue(ctx, "role", userType)
+			ctx = context.WithValue(ctx, "email", userEmail)
+			ctx = context.WithValue(ctx, "userType", userType)
+			return ctx, nil
+		}
+
+	case strings.HasPrefix(r.URL.Path, "/contests/check/registrations/"):
+		vars := mux.Vars(r)
+		contestId, ok := vars["contestId"]
+		if !ok {
+			return ctx, fmt.Errorf("no Contest Id provided")
+		}
+		ctx = context.WithValue(ctx, "contestId", contestId)
+		ctx = context.WithValue(ctx, "email", userEmail)
+		return ctx, nil
+
 	}
 	// Default to allowing access if the route is not explicitly handled
 	return ctx, nil

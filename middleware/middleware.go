@@ -9,16 +9,22 @@ import (
 )
 
 var AuthenticationNotRequired map[string]bool = map[string]bool{
-	"/create":       true,
-	"/problems/get": true,
+	"/create":               true,
+	"/problems/get":         true,
+	"/contests/leaderboard": true,
+	"/contests/get":         true,
 }
 
 var RoleMethods = map[string][]string{
-	"/users/get":              {utils.UserRole, utils.SuperAdminRole},
-	"/users/update/":          {utils.UserRole, utils.SuperAdminRole},
-	"/problems/upload":        {utils.UserRole, utils.SuperAdminRole},
-	"/problems/getnotvisible": {utils.UserRole, utils.SuperAdminRole},
-	"/problems/update/": {utils.UserRole, utils.SuperAdminRole},
+	"/users/get":                     {utils.UserRole, utils.SuperAdminRole},
+	"/users/update/":                 {utils.UserRole, utils.SuperAdminRole},
+	"/problems/upload":               {utils.UserRole, utils.SuperAdminRole},
+	"/problems/getnotvisible":        {utils.UserRole, utils.SuperAdminRole},
+	"/problems/update/":              {utils.UserRole, utils.SuperAdminRole},
+	"/contests/create":               {utils.UserRole, utils.SuperAdminRole},
+	"/contests/register/":            {utils.UserRole},
+	"/contests/get/registrations/":   {utils.UserRole, utils.SuperAdminRole},
+	"/contests/check/registrations/": {utils.UserRole},
 }
 
 // Authenticate is a middleware function that performs authentication

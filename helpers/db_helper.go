@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"time"
 	"worldwide-coders/models"
 	"worldwide-coders/utils"
 
@@ -183,4 +184,49 @@ func Helper_UpdateProblem(id int32, problem *models.Problem) error {
 		},
 	)
 	return err
+}
+
+func Helper_GetContestById(contestId primitive.ObjectID) (*models.Contest, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("contests")
+	var contest models.Contest
+	err := collection.FindOne(context.Background(), bson.M{"_id": contestId}).Decode(&contest)
+	return &contest, err
+}
+
+func Helper_GetAllContests() ([]models.Contest, error) {
+	var contests []models.Contest
+	collection := models.DB.Database("WorldwideCodersDb").Collection("contests")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.D{}, options.Find())
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	for cursor.Next(ctx) {
+		var contest models.Contest
+		if err := cursor.Decode(&contest); err != nil {
+			return nil, err
+		}
+		contests = append(contests, contest)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return contests, nil
+}
+
+func Helper_GetRegistrationByEmailAndContest(email string, contestId primitive.ObjectID) (*models.Participant, error) {
+	collection := models.DB.Database("WorldwideCodersDb").Collection("participants")
+	var participant models.Participant
+	err := collection.FindOne(context.Background(), bson.M{"user_id": email, "contest_id": contestId}).Decode(&participant)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	return &participant, err
 }
